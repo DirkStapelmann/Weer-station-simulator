@@ -1,0 +1,12 @@
+# Visual Studio folders
+.vs/
+
+# Build directories
+/bin/
+/obj/
+
+# IDE configuration files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
