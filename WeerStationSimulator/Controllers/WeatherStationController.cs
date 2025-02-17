@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Weer_station_simulator.Data;
-using Weer_station_simulator.Models; // Zorg ervoor dat je de modellen importeert
+﻿using Microsoft.AspNetCore.Mvc;
+using Weer_station_simulator.Models;
 
 namespace Weer_station_simulator.Controllers
 {
@@ -12,79 +7,94 @@ namespace Weer_station_simulator.Controllers
     [Route("api/weatherstation")]
     public class WeatherStationController : ControllerBase
     {
-        private readonly WeatherDbContext _dbContext;
+        private readonly WeatherStationFacade _weatherStationFacade;
 
-        public WeatherStationController(WeatherDbContext dbContext)
+        public WeatherStationController(WeatherStationFacade weatherStationFacade)
         {
-            _dbContext = dbContext;
+            _weatherStationFacade = weatherStationFacade;
         }
 
         [HttpGet("latest")]
         public ActionResult<TemperatureReading> GetLatestTemperature([FromQuery] string unit = "C")
         {
-            var latestReading = _dbContext.TemperatureReadings
-                .OrderByDescending(t => t.Timestamp)
-                .FirstOrDefault();
+            var latestReading = _weatherStationFacade.GetTemperatureHistory().FirstOrDefault();
 
             if (latestReading == null)
             {
-                Console.WriteLine("Geen temperatuurdata beschikbaar.");
                 return NotFound("Geen temperatuurdata beschikbaar.");
             }
 
-            // Toepassen van temperatuurconversie
-            float convertedTemperature = latestReading.Temperature;
-
-            switch (unit.ToUpper())
+            // Gebruik TemperatureContext voor conversie
+            ITemperatureConverter converter = unit.ToUpper() switch
             {
-                case "F":
-                    convertedTemperature = (latestReading.Temperature * 9 / 5) + 32;
-                    break;
-                case "K":
-                    convertedTemperature = latestReading.Temperature + 273.15f;
-                    break;
-            }
+                "F" => new FahrenheitConverter(),
+                "K" => new KelvinConverter(),
+                _ => new CelsiusConverter()
+            };
 
-            Console.WriteLine($"Returning latest temperature: {convertedTemperature} {unit}");
+            var context = new TemperatureContext(converter);
+            float convertedTemperature = context.GetConvertedTemperature(latestReading.Temperature);
 
             return Ok(new TemperatureReading
             {
                 Id = latestReading.Id,
                 Temperature = convertedTemperature,
-                Unit = unit,
+                Unit = unit.ToUpper(),
                 Timestamp = latestReading.Timestamp
             });
         }
 
-
         [HttpPost("generate")]
-        public ActionResult GenerateNewTemperature()
+        public ActionResult GenerateNewTemperature([FromQuery] string unit = "C")
         {
-            var random = new Random();
-            float newTemperature = (float)(random.NextDouble() * 40 - 10);
-
-            var newReading = new TemperatureReading
+            // Controleer of de eenheid geldig is
+            if (unit.ToUpper() != "C" && unit.ToUpper() != "F" && unit.ToUpper() != "K")
             {
-                Temperature = newTemperature,
-                Unit = "C",
-                Timestamp = DateTime.UtcNow
-            };
+                return BadRequest("Ongeldige eenheid. Gebruik 'C', 'F' of 'K'.");
+            }
 
-            _dbContext.TemperatureReadings.Add(newReading);
-            _dbContext.SaveChanges();
+            // Roep de facade aan om de temperatuur te genereren en op te slaan
+            _weatherStationFacade.GenerateAndSaveTemperature(unit);
 
-            return Ok("Nieuwe temperatuur gegenereerd en opgeslagen.");
+            return Ok($"Nieuwe temperatuur gegenereerd en opgeslagen in {unit.ToUpper()}.");
         }
 
         [HttpGet("history")]
-        public ActionResult<IEnumerable<TemperatureReading>> GetTemperatureHistory()
+        public ActionResult<IEnumerable<TemperatureReading>> GetTemperatureHistory([FromQuery] int limit = 10)
         {
-            var history = _dbContext.TemperatureReadings
-                .OrderByDescending(t => t.Timestamp)
-                .Take(10)
+            limit = Math.Clamp(limit, 1, 100); // Limiet tussen 1 en 100 om overbelasting te voorkomen
+
+            var history = _weatherStationFacade.GetTemperatureHistory()
+                .Take(limit)
                 .ToList();
 
             return Ok(history);
+        }
+
+        [HttpGet("sensor/status")]
+        public ActionResult<string> GetSensorStatus()
+        {
+            return Ok(_weatherStationFacade.GetSensorStatus());
+        }
+
+        [HttpPost("sensor/status")]
+        public ActionResult SetSensorStatus([FromBody] SensorStatusRequest request)
+        {
+            try
+            {
+                _weatherStationFacade.SetSensorStatus(request.Status);
+                return Ok($"Sensorstatus gewijzigd naar: {request.Status}");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // Hulpklasse voor JSON-requestbody
+        public class SensorStatusRequest
+        {
+            public string Status { get; set; } = "active";
         }
     }
 }

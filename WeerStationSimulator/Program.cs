@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Weer_station_simulator.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-
+using Weer_station_simulator.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +21,18 @@ builder.Services.AddCors(options =>
 // Voeg SQLite database toe
 builder.Services.AddDbContext<WeatherDbContext>(options =>
     options.UseSqlite("Data Source=weather.db"));
+
+// **Registreer IWeatherMode met een standaard implementatie (DayMode)**
+builder.Services.AddSingleton<IWeatherMode, DayMode>();
+
+// **Registreer WeatherModeContext afhankelijk van IWeatherMode**
+builder.Services.AddSingleton<WeatherModeContext>(provider =>
+{
+    var mode = provider.GetRequiredService<IWeatherMode>(); // Haal de standaardmodus op
+    return new WeatherModeContext(mode);
+});
+
+builder.Services.AddScoped<WeatherStationFacade>();
 
 // Add services to the container.
 builder.Services.AddControllers();

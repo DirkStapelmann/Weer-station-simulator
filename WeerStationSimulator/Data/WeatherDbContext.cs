@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Weer_station_simulator.Models;  // ✅ Voeg deze regel toe!
+using Weer_station_simulator.Models;
 
 namespace Weer_station_simulator.Data
 {

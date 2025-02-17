@@ -1,11 +1,5 @@
-﻿// Observer Pattern - Interface voor temperatuur updates
-using System;
-using System.Collections.Generic;
+﻿using WeerStationSimulator.Models;  // ✅ Voeg deze regel toe!
 
-public interface IObserver
-{
-    void Update(float temperature);
-}
 
 // Strategy Pattern - Interface voor temperatuurconversie
 public interface ITemperatureConverter

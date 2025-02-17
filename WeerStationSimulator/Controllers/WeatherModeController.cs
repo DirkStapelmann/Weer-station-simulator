@@ -9,9 +9,10 @@ namespace Weer_station_simulator.Controllers
     {
         private readonly WeatherModeContext _modeContext;
 
-        public WeatherModeController()
+        // Gebruik Dependency Injection voor WeatherModeContext
+        public WeatherModeController(WeatherModeContext modeContext)
         {
-            _modeContext = new WeatherModeContext(new DayMode()); // Standaard naar dagmodus
+            _modeContext = modeContext;
         }
 
         [HttpGet("mode")]
@@ -23,10 +24,12 @@ namespace Weer_station_simulator.Controllers
         [HttpPost("mode")]
         public IActionResult SetMode([FromBody] ModeRequest request)
         {
-            if (request.Mode == "Night")
-                _modeContext.SetMode(new NightMode());
-            else
-                _modeContext.SetMode(new DayMode());
+            if (request.Mode != "Night" && request.Mode != "Day")
+            {
+                return BadRequest("Ongeldige modus. Gebruik 'Night' of 'Day'.");
+            }
+
+            _modeContext.SetMode(request.Mode == "Night" ? new NightMode() : new DayMode());
 
             return Ok(new { mode = _modeContext.GetMode() });
         }
@@ -34,6 +37,6 @@ namespace Weer_station_simulator.Controllers
 
     public class ModeRequest
     {
-        public string Mode { get; set; } = string.Empty; // ✅ Standaardwaarde voorkomt waarschuwing
+        public string Mode { get; set; } = string.Empty; // Standaardwaarde voorkomt waarschuwing
     }
 }
