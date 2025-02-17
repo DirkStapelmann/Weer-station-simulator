@@ -1,7 +1,3 @@
-Hier is de volledige documentatie over de **design patterns** in jouw project, gepresenteerd in **Canvas-formaat**. 📜✨  
-
----
-
 # **Design Patterns in het Weerstationproject**  
 
 ## **1. Inleiding**  
@@ -222,5 +218,3 @@ public class WeatherDbContext : DbContext
 
 ## **4. Conclusie**  
 Dit project maakt **effectief gebruik van 5+ design patterns** om de code **modulair, schaalbaar en onderhoudbaar** te houden. Elk patroon is zorgvuldig gekozen om een specifiek probleem op te lossen, zoals **state management, flexibele strategieën, automatische updates, een enkele instantie en eenvoudiger beheer van complexe systemen**.  
-
-Wil je nog een **diagram of extra uitleg**? 🚀
