@@ -3,17 +3,20 @@ using Weer_station_simulator.Models;
 
 namespace Weer_station_simulator.Controllers
 {
+    // Controller voor het beheren van temperatuurmetingen en sensorstatus via API-endpoints.
     [ApiController]
     [Route("api/weatherstation")]
     public class WeatherStationController : ControllerBase
     {
         private readonly WeatherStationFacade _weatherStationFacade;
 
+        // Gebruik van het Facade Pattern om interactie met complexe logica te vereenvoudigen.
         public WeatherStationController(WeatherStationFacade weatherStationFacade)
         {
             _weatherStationFacade = weatherStationFacade;
         }
 
+        // Haalt de meest recente temperatuurmeting op en converteert deze naar de gewenste eenheid.
         [HttpGet("latest")]
         public ActionResult<TemperatureReading> GetLatestTemperature([FromQuery] string unit = "C")
         {
@@ -24,7 +27,7 @@ namespace Weer_station_simulator.Controllers
                 return NotFound("Geen temperatuurdata beschikbaar.");
             }
 
-            // Gebruik TemperatureContext voor conversie
+            // Strategy Pattern: Kiest een converterstrategie op basis van de opgegeven eenheid.
             ITemperatureConverter converter = unit.ToUpper() switch
             {
                 "F" => new FahrenheitConverter(),
@@ -44,25 +47,24 @@ namespace Weer_station_simulator.Controllers
             });
         }
 
+        // Genereert en slaat een nieuwe temperatuurmeting op via de Facade.
         [HttpPost("generate")]
         public ActionResult GenerateNewTemperature([FromQuery] string unit = "C")
         {
-            // Controleer of de eenheid geldig is
             if (unit.ToUpper() != "C" && unit.ToUpper() != "F" && unit.ToUpper() != "K")
             {
                 return BadRequest("Ongeldige eenheid. Gebruik 'C', 'F' of 'K'.");
             }
 
-            // Roep de facade aan om de temperatuur te genereren en op te slaan
             _weatherStationFacade.GenerateAndSaveTemperature(unit);
-
             return Ok($"Nieuwe temperatuur gegenereerd en opgeslagen in {unit.ToUpper()}.");
         }
 
+        // Haalt de temperatuurhistorie op met een limiet om overbelasting te voorkomen.
         [HttpGet("history")]
         public ActionResult<IEnumerable<TemperatureReading>> GetTemperatureHistory([FromQuery] int limit = 10)
         {
-            limit = Math.Clamp(limit, 1, 100); // Limiet tussen 1 en 100 om overbelasting te voorkomen
+            limit = Math.Clamp(limit, 1, 100);
 
             var history = _weatherStationFacade.GetTemperatureHistory()
                 .Take(limit)
@@ -71,12 +73,14 @@ namespace Weer_station_simulator.Controllers
             return Ok(history);
         }
 
+        // Haalt de status van de temperatuursensor op.
         [HttpGet("sensor/status")]
         public ActionResult<string> GetSensorStatus()
         {
             return Ok(_weatherStationFacade.GetSensorStatus());
         }
 
+        // Wijzigt de sensorstatus via een JSON-request.
         [HttpPost("sensor/status")]
         public ActionResult SetSensorStatus([FromBody] SensorStatusRequest request)
         {
@@ -91,10 +95,10 @@ namespace Weer_station_simulator.Controllers
             }
         }
 
-        // Hulpklasse voor JSON-requestbody
+        // Hulpklasse voor het ontvangen van sensorstatus-updates via JSON.
         public class SensorStatusRequest
         {
-            public string Status { get; set; } = "active";
+            public string Status { get; set; } = "active"; // Standaardwaarde voorkomt null-errors.
         }
     }
 }

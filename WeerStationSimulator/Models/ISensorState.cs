@@ -1,24 +1,24 @@
 ﻿namespace WeerStationSimulator.Models
 {
-    // Interface voor sensor status
+    // Interface voor het State Pattern: definieert verschillende toestanden van de sensor.
     public interface ISensorState
     {
         string GetStatus();
     }
 
-    // Sensor is actief en functioneert correct
+    // Concreet onderdeel van het State Pattern: de sensor is actief en functioneert normaal.
     public class ActiveState : ISensorState
     {
         public string GetStatus() => "Sensor is actief";
     }
 
-    // Sensor heeft een storing
+    // Concreet onderdeel van het State Pattern: de sensor heeft een storing.
     public class ErrorState : ISensorState
     {
         public string GetStatus() => "Sensor heeft een storing";
     }
 
-    // Sensor is offline en verzendt geen data
+    // Concreet onderdeel van het State Pattern: de sensor is offline en verzendt geen data.
     public class OfflineState : ISensorState
     {
         public string GetStatus() => "Sensor is offline";

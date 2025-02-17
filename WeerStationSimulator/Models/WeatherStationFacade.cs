@@ -1,31 +1,32 @@
 ﻿using Weer_station_simulator.Data;
-using Weer_station_simulator.Models;
 using WeerStationSimulator.Models;
 
 namespace Weer_station_simulator.Models
 {
+    // Facade Pattern: Biedt een eenvoudige interface om verschillende systemen te beheren.
     public class WeatherStationFacade
     {
-        private readonly WeatherStation _weatherStation;
-        private readonly WeatherDbContext _dbContext;
-        private WeatherModeContext _weatherModeContext;
-        private SensorContext _sensorContext; // Verwijder 'readonly' zodat we dit kunnen wijzigen
+        private readonly WeatherStation _weatherStation;  // Singleton Pattern wordt gebruikt
+        private readonly WeatherDbContext _dbContext;    // Database Context (Repository Pattern)
+        private WeatherModeContext _weatherModeContext;  // State Pattern voor weermodus
+        private SensorContext _sensorContext;            // State Pattern voor sensorstatus
 
+        // Constructor initialiseert de afhankelijkheden en standaardwaarden.
         public WeatherStationFacade(WeatherDbContext dbContext)
         {
-            _weatherStation = WeatherStation.GetInstance();  // Singleton Pattern
+            _weatherStation = WeatherStation.GetInstance(); // Singleton Pattern
             _dbContext = dbContext;
-            _weatherModeContext = new WeatherModeContext(new DayMode()); // Standaard dagmodus
+            _weatherModeContext = new WeatherModeContext(new DayMode()); // State Pattern
             _sensorContext = new SensorContext(); // Zorgt ervoor dat er altijd een sensorstatus is
         }
 
-        // 🌡️ Sensorstatus ophalen
+        // Ophalen van de sensorstatus via het State Pattern.
         public string GetSensorStatus()
         {
-            return _sensorContext.GetStatus(); // _sensorContext kan nooit null zijn
+            return _sensorContext.GetStatus();
         }
 
-        // 🔄 Sensorstatus wijzigen
+        // Wijzigt de sensorstatus via het State Pattern.
         public void SetSensorStatus(string status)
         {
             switch (status.ToLower())
@@ -44,19 +45,19 @@ namespace Weer_station_simulator.Models
             }
         }
 
-        // 🌡️ Haal de laatste temperatuur op in de gekozen eenheid
+        // Strategy Pattern: Haalt de laatste temperatuur op en past de juiste conversiestrategie toe.
         public float GetLatestTemperature(ITemperatureConverter converter)
         {
             _weatherStation.SetTemperatureUnit(converter);
             return _weatherStation.GetConvertedTemperature();
         }
 
-        // 🔄 Genereer een nieuwe temperatuur en sla op in de database
+        // Genereert een nieuwe temperatuur en slaat deze op in de database.
         public void GenerateAndSaveTemperature(string unit = "C")
         {
             _weatherStation.GenerateTemperature();
 
-            // Bepaal de juiste conversiestrategie
+            // Strategy Pattern: Bepaalt de juiste conversiestrategie
             ITemperatureConverter converter = unit.ToUpper() switch
             {
                 "F" => new FahrenheitConverter(),
@@ -64,7 +65,6 @@ namespace Weer_station_simulator.Models
                 _ => new CelsiusConverter()
             };
 
-            // Pas de temperatuurconversie toe
             _weatherStation.SetTemperatureUnit(converter);
             float convertedTemperature = _weatherStation.GetConvertedTemperature();
 
@@ -79,18 +79,19 @@ namespace Weer_station_simulator.Models
             _dbContext.SaveChanges();
         }
 
-        // 📊 Haal de temperatuurgeschiedenis op
+        // Ophalen van de temperatuurgeschiedenis uit de database.
         public List<TemperatureReading> GetTemperatureHistory()
         {
             return _dbContext.TemperatureReadings.OrderByDescending(t => t.Timestamp).ToList();
         }
 
-        // 🌙 Dag- en Nachtmodus wisselen (Strategy Pattern)
+        // Instellen van de weermodus via het State Pattern.
         public void SetWeatherMode(IWeatherMode mode)
         {
             _weatherModeContext.SetMode(mode);
         }
 
+        // Ophalen van de huidige weermodus.
         public string GetCurrentWeatherMode()
         {
             return _weatherModeContext.GetMode();
