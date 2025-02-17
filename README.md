@@ -1,34 +1,61 @@
-# **Design Patterns in het Weerstationproject**  
+# **Project Start**
 
-## **1. Inleiding**  
-Dit project maakt gebruik van verschillende **design patterns** om de code **modulair, uitbreidbaar en onderhoudbaar** te houden. Hieronder wordt uitgelegd welke patterns zijn gebruikt, waarom ze zijn gekozen en hoe ze in de code zijn geïmplementeerd.  
+### netstat -ano | findstr :7113
+
+Doe dit nadat je de C# start om te checken of die aan staat. Start C# project in Visual Studio als je dotnet run probeert doet hij het niet.
+je kan ook https://localhost:7113/api/weatherstation/latest openen om te kijken of hij daar loopt.
+
+### `npm start`
+
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+# **Design Patterns in het Weerstationproject**
+
+## **1. Inleiding**
+
+Dit project maakt gebruik van verschillende **design patterns** om de code **modulair, uitbreidbaar en onderhoudbaar** te houden. Hieronder wordt uitgelegd welke patterns zijn gebruikt, waarom ze zijn gekozen en hoe ze in de code zijn geïmplementeerd.
 
 ---
 
-## **2. Overzicht van gebruikte design patterns**  
+## **2. Overzicht van gebruikte design patterns**
 
-| **Design Pattern**  | **Aantal keer gebruikt** | **Toepassing in de code** |
-|---------------------|----------------------|--------------------------------|
-| **State Pattern** | 3x  | **WeatherModeContext, ISensorState, SensorContext** beheert toestanden zoals dag/nachtmodus en sensorstatus. |
-| **Strategy Pattern** | 2x  | **WeatherStation & WeatherStationFacade** gebruiken strategieën voor temperatuurconversie. |
-| **Singleton Pattern** | 2x  | **WeatherStation & Program.cs** zorgen ervoor dat bepaalde klassen slechts één keer worden geïnstantieerd. |
-| **Observer Pattern** | 1x  | **WeatherStation & IObserver** laten observatoren reageren op temperatuurveranderingen. |
-| **Facade Pattern** | 1x  | **WeatherStationFacade** biedt een vereenvoudigde interface voor complexe logica. |
-| **Repository Pattern** | 1x  | **WeatherDbContext & TemperatureReading** beheren databasebewerkingen. |
+| **Design Pattern**     | **Aantal keer gebruikt** | **Toepassing in de code**                                                                                    |
+| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| **State Pattern**      | 3x                       | **WeatherModeContext, ISensorState, SensorContext** beheert toestanden zoals dag/nachtmodus en sensorstatus. |
+| **Strategy Pattern**   | 2x                       | **WeatherStation & WeatherStationFacade** gebruiken strategieën voor temperatuurconversie.                   |
+| **Singleton Pattern**  | 2x                       | **WeatherStation & Program.cs** zorgen ervoor dat bepaalde klassen slechts één keer worden geïnstantieerd.   |
+| **Observer Pattern**   | 1x                       | **WeatherStation & IObserver** laten observatoren reageren op temperatuurveranderingen.                      |
+| **Facade Pattern**     | 1x                       | **WeatherStationFacade** biedt een vereenvoudigde interface voor complexe logica.                            |
+| **Repository Pattern** | 1x                       | **WeatherDbContext & TemperatureReading** beheren databasebewerkingen.                                       |
 
 ---
 
-## **3. Uitleg per design pattern**  
+## **3. Uitleg per design pattern**
 
-### **3.1 State Pattern (3x) – Beheren van toestanden**  
+### **3.1 State Pattern (3x) – Beheren van toestanden**
+
 **Waarom gekozen?**  
-Het **State Pattern** wordt gebruikt om dynamisch te wisselen tussen verschillende toestanden zonder complexe `if-else` structuren.  
+Het **State Pattern** wordt gebruikt om dynamisch te wisselen tussen verschillende toestanden zonder complexe `if-else` structuren.
 
-**Waar toegepast?**  
-- `WeatherModeContext` (Dagmodus/Nachtmodus)  
-- `SensorContext` (Sensorstatus: actief, fout, offline)  
+**Waar toegepast?**
 
-**Codevoorbeeld (WeatherModeContext.cs)**  
+- `WeatherModeContext` (Dagmodus/Nachtmodus)
+- `SensorContext` (Sensorstatus: actief, fout, offline)
+
+**Codevoorbeeld (WeatherModeContext.cs)**
+
 ```csharp
 public class WeatherModeContext
 {
@@ -50,19 +77,23 @@ public class WeatherModeContext
     }
 }
 ```
-**Effect:** De modus van het weerstation kan dynamisch veranderen zonder afhankelijk te zijn van `if-else` structuren.  
+
+**Effect:** De modus van het weerstation kan dynamisch veranderen zonder afhankelijk te zijn van `if-else` structuren.
 
 ---
 
-### **3.2 Strategy Pattern (2x) – Flexibele temperatuurconversie**  
+### **3.2 Strategy Pattern (2x) – Flexibele temperatuurconversie**
+
 **Waarom gekozen?**  
-Het **Strategy Pattern** maakt het mogelijk om **verschillende algoritmen** uitwisselbaar te gebruiken, zoals temperatuurconversies.  
+Het **Strategy Pattern** maakt het mogelijk om **verschillende algoritmen** uitwisselbaar te gebruiken, zoals temperatuurconversies.
 
-**Waar toegepast?**  
-- `WeatherStation.cs` voor conversies tussen **Celsius, Fahrenheit en Kelvin**  
-- `WeatherStationFacade.cs` kiest de juiste strategie op basis van gebruikersinvoer  
+**Waar toegepast?**
 
-**Codevoorbeeld (TemperatureContext.cs)**  
+- `WeatherStation.cs` voor conversies tussen **Celsius, Fahrenheit en Kelvin**
+- `WeatherStationFacade.cs` kiest de juiste strategie op basis van gebruikersinvoer
+
+**Codevoorbeeld (TemperatureContext.cs)**
+
 ```csharp
 public interface ITemperatureConverter
 {
@@ -94,19 +125,23 @@ public class TemperatureContext
     }
 }
 ```
-**Effect:** De applicatie kan eenvoudig **nieuwe conversie-algoritmen** toevoegen zonder bestaande code te wijzigen.  
+
+**Effect:** De applicatie kan eenvoudig **nieuwe conversie-algoritmen** toevoegen zonder bestaande code te wijzigen.
 
 ---
 
-### **3.3 Singleton Pattern (2x) – Één instantie van de klasse**  
+### **3.3 Singleton Pattern (2x) – Één instantie van de klasse**
+
 **Waarom gekozen?**  
-Het **Singleton Pattern** zorgt ervoor dat er **slechts één instantie** van een klasse wordt gemaakt, wat geheugen bespaart en consistentie garandeert.  
+Het **Singleton Pattern** zorgt ervoor dat er **slechts één instantie** van een klasse wordt gemaakt, wat geheugen bespaart en consistentie garandeert.
 
-**Waar toegepast?**  
-- `WeatherStation.cs` zorgt ervoor dat er maar **één** weerstation is.  
-- `Program.cs` maakt **WeatherModeContext** als singleton beschikbaar.  
+**Waar toegepast?**
 
-**Codevoorbeeld (WeatherStation.cs)**  
+- `WeatherStation.cs` zorgt ervoor dat er maar **één** weerstation is.
+- `Program.cs` maakt **WeatherModeContext** als singleton beschikbaar.
+
+**Codevoorbeeld (WeatherStation.cs)**
+
 ```csharp
 public class WeatherStation
 {
@@ -126,18 +161,22 @@ public class WeatherStation
     }
 }
 ```
-**Effect:** Voorkomt dat er per ongeluk **meerdere instanties** van WeatherStation worden aangemaakt.  
+
+**Effect:** Voorkomt dat er per ongeluk **meerdere instanties** van WeatherStation worden aangemaakt.
 
 ---
 
-### **3.4 Observer Pattern (1x) – Automatische updates bij temperatuurverandering**  
+### **3.4 Observer Pattern (1x) – Automatische updates bij temperatuurverandering**
+
 **Waarom gekozen?**  
-Het **Observer Pattern** wordt gebruikt om meerdere objecten op de hoogte te brengen van veranderingen in een **subject** (WeatherStation).  
+Het **Observer Pattern** wordt gebruikt om meerdere objecten op de hoogte te brengen van veranderingen in een **subject** (WeatherStation).
 
-**Waar toegepast?**  
-- `WeatherStation.cs` bevat een lijst met observatoren die een update krijgen bij **temperatuurveranderingen**.  
+**Waar toegepast?**
 
-**Codevoorbeeld (WeatherStation.cs)**  
+- `WeatherStation.cs` bevat een lijst met observatoren die een update krijgen bij **temperatuurveranderingen**.
+
+**Codevoorbeeld (WeatherStation.cs)**
+
 ```csharp
 public class WeatherStation
 {
@@ -163,18 +202,22 @@ public class WeatherStation
     }
 }
 ```
-**Effect:** Observatoren worden **automatisch op de hoogte gebracht** zonder directe afhankelijkheden.  
+
+**Effect:** Observatoren worden **automatisch op de hoogte gebracht** zonder directe afhankelijkheden.
 
 ---
 
-### **3.5 Facade Pattern (1x) – Vereenvoudigde toegang tot complexe systemen**  
+### **3.5 Facade Pattern (1x) – Vereenvoudigde toegang tot complexe systemen**
+
 **Waarom gekozen?**  
-Het **Facade Pattern** verbergt de complexiteit van meerdere klassen achter één **eenvoudige interface**.  
+Het **Facade Pattern** verbergt de complexiteit van meerdere klassen achter één **eenvoudige interface**.
 
-**Waar toegepast?**  
-- `WeatherStationFacade.cs` maakt het makkelijker om de sensor, database en temperatuurgegevens te beheren.  
+**Waar toegepast?**
 
-**Codevoorbeeld (WeatherStationFacade.cs)**  
+- `WeatherStationFacade.cs` maakt het makkelijker om de sensor, database en temperatuurgegevens te beheren.
+
+**Codevoorbeeld (WeatherStationFacade.cs)**
+
 ```csharp
 public class WeatherStationFacade
 {
@@ -194,27 +237,33 @@ public class WeatherStationFacade
     }
 }
 ```
-**Effect:** Controllers hoeven **geen complexe logica** meer te kennen, ze roepen alleen **WeatherStationFacade** aan.  
+
+**Effect:** Controllers hoeven **geen complexe logica** meer te kennen, ze roepen alleen **WeatherStationFacade** aan.
 
 ---
 
-### **3.6 Repository Pattern (1x) – Gestructureerde database-opslag**  
+### **3.6 Repository Pattern (1x) – Gestructureerde database-opslag**
+
 **Waarom gekozen?**  
-Het **Repository Pattern** verbergt de database-operaties en voorkomt directe afhankelijkheid van Entity Framework in controllers.  
+Het **Repository Pattern** verbergt de database-operaties en voorkomt directe afhankelijkheid van Entity Framework in controllers.
 
-**Waar toegepast?**  
-- `WeatherDbContext.cs` beheert de opslag van temperatuurmetingen in de database.  
+**Waar toegepast?**
 
-**Codevoorbeeld (WeatherDbContext.cs)**  
+- `WeatherDbContext.cs` beheert de opslag van temperatuurmetingen in de database.
+
+**Codevoorbeeld (WeatherDbContext.cs)**
+
 ```csharp
 public class WeatherDbContext : DbContext
 {
     public DbSet<TemperatureReading> TemperatureReadings { get; set; }
 }
 ```
-**Effect:** Controllers hoeven **geen directe SQL-query's** uit te voeren, ze werken met `WeatherDbContext`.  
+
+**Effect:** Controllers hoeven **geen directe SQL-query's** uit te voeren, ze werken met `WeatherDbContext`.
 
 ---
 
-## **4. Conclusie**  
-Dit project maakt **effectief gebruik van 5+ design patterns** om de code **modulair, schaalbaar en onderhoudbaar** te houden. Elk patroon is zorgvuldig gekozen om een specifiek probleem op te lossen, zoals **state management, flexibele strategieën, automatische updates, een enkele instantie en eenvoudiger beheer van complexe systemen**.  
+## **4. Conclusie**
+
+Dit project maakt **effectief gebruik van 5+ design patterns** om de code **modulair, schaalbaar en onderhoudbaar** te houden. Elk patroon is zorgvuldig gekozen om een specifiek probleem op te lossen, zoals **state management, flexibele strategieën, automatische updates, een enkele instantie en eenvoudiger beheer van complexe systemen**.
