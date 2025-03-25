@@ -49,6 +49,13 @@ Dit project maakt gebruik van verschillende **design patterns** om de code **mod
 **Waarom gekozen?**  
 Het **State Pattern** wordt gebruikt om dynamisch te wisselen tussen verschillende toestanden zonder complexe `if-else` structuren.
 
+**Waarom dit pattern (en niet iets anders)?**  
+Toestanden zoals dag/nachtmodus of sensorstatus kunnen voortdurend veranderen. In plaats van een complexe wirwar van `if-else` of `switch`-statements te onderhouden, biedt het **State Pattern** een **georganiseerde en schaalbare** manier om gedrag per toestand onder te brengen in aparte klassen. Een alternatief, zoals het Strategy Pattern, zou niet voldoende zijn omdat het bij state gaat om **interne toestandsverandering** met blijvende effecten, terwijl strategieën meer **uitwisselbare algoritmes zonder geheugen** zijn.
+
+> **Kortom:** het State Pattern is hier de beste keuze omdat het draait om _gedrag dat afhangt van de interne toestand van een object_ en deze toestand ook _kan veranderen_.
+
+---
+
 **Waar toegepast?**
 
 - `WeatherModeContext` (Dagmodus/Nachtmodus)
@@ -86,6 +93,13 @@ public class WeatherModeContext
 
 **Waarom gekozen?**  
 Het **Strategy Pattern** maakt het mogelijk om **verschillende algoritmen** uitwisselbaar te gebruiken, zoals temperatuurconversies.
+
+**Waarom dit pattern (en niet iets anders)?**  
+Er zijn meerdere algoritmen (Celsius, Fahrenheit, Kelvin) die allemaal op dezelfde manier aangeroepen worden, maar verschillend werken. Deze algoritmes kunnen ten opzichte van elkaar gewisseld worden — precies waarvoor het **Strategy Pattern** bedoeld is. Een alternatief zoals het Factory Pattern zou eerder gaan over **objectcreatie**, terwijl het hier juist gaat om **gedragsvariatie op basis van invoer**.
+
+> **Kortom:** het Strategy Pattern past hier perfect omdat je _keuzevrijheid tussen meerdere algoritmes_ wilt zonder `if-else`-ketens en mét behoud van uitbreidbaarheid.
+
+---
 
 **Waar toegepast?**
 
@@ -135,6 +149,13 @@ public class TemperatureContext
 **Waarom gekozen?**  
 Het **Singleton Pattern** zorgt ervoor dat er **slechts één instantie** van een klasse wordt gemaakt, wat geheugen bespaart en consistentie garandeert.
 
+**Waarom dit pattern (en niet iets anders)?**  
+Voor objecten zoals `WeatherStation`, die _de enige bron van waarheid_ moeten zijn binnen het systeem, is het essentieel dat er slechts één instantie bestaat. In plaats van dit handmatig te beheren (wat foutgevoelig is), zorgt het **Singleton Pattern** automatisch voor **instantiebeheer**. Andere patronen zoals het Repository Pattern of Facade Pattern hebben hier geen controle over het aantal instanties.
+
+> **Kortom:** het Singleton Pattern is gekozen omdat _consistentie en geheugenbeheer_ cruciaal zijn voor centrale componenten zoals het weerstation.
+
+---
+
 **Waar toegepast?**
 
 - `WeatherStation.cs` zorgt ervoor dat er maar **één** weerstation is.
@@ -170,6 +191,13 @@ public class WeatherStation
 
 **Waarom gekozen?**  
 Het **Observer Pattern** wordt gebruikt om meerdere objecten op de hoogte te brengen van veranderingen in een **subject** (WeatherStation).
+
+**Waarom dit pattern (en niet iets anders)?**  
+Wanneer meerdere onderdelen van het systeem (bijvoorbeeld UI-componenten, logs, database-updates) op de hoogte moeten worden gebracht van temperatuurveranderingen, is het **Observer Pattern** ideaal. Een alternatief zou zijn om handmatig callbacks aan te roepen, maar dat leidt tot **hoge koppeling** tussen klassen. Observer biedt juist een **losgekoppelde structuur**, wat onderhoud eenvoudiger maakt.
+
+> **Kortom:** het Observer Pattern is gekozen omdat het _loskoppelt_ wie op de hoogte wordt gesteld, wat leidt tot een schaalbaar en uitbreidbaar notificatiesysteem.
+
+---
 
 **Waar toegepast?**
 
@@ -212,6 +240,13 @@ public class WeatherStation
 **Waarom gekozen?**  
 Het **Facade Pattern** verbergt de complexiteit van meerdere klassen achter één **eenvoudige interface**.
 
+**Waarom dit pattern (en niet iets anders)?**  
+De Facade biedt een eenvoudige interface voor complexe logica: meerdere klassen (zoals `WeatherStation`, `DbContext`, converters) worden op één plek samengebracht. Je zou dit ook via Dependency Injection kunnen combineren zonder facade, maar dan moet de controller alsnog veel weten over interne structuren. Met de **Facade Pattern** abstraheer je dat allemaal weg. Het Adapter Pattern is bijvoorbeeld meer bedoeld voor **interface-aanpassing tussen twee systemen**, wat hier niet van toepassing is.
+
+> **Kortom:** het Facade Pattern is hier logisch om _complexiteit te verbergen_ en _gebruiksgemak te verhogen_ richting de controller.
+
+---
+
 **Waar toegepast?**
 
 - `WeatherStationFacade.cs` maakt het makkelijker om de sensor, database en temperatuurgegevens te beheren.
@@ -246,6 +281,13 @@ public class WeatherStationFacade
 
 **Waarom gekozen?**  
 Het **Repository Pattern** verbergt de database-operaties en voorkomt directe afhankelijkheid van Entity Framework in controllers.
+
+**Waarom dit pattern (en niet iets anders)?**  
+De Repository Pattern is gekozen om een **abstractielaag tussen database en businesslogica** te creëren. Zonder dit pattern zou je Entity Framework direct vanuit controllers gebruiken, wat zorgt voor een sterke koppeling. Een alternatief zoals het DAO Pattern lijkt erop, maar richt zich vaker op **enkelvoudige objecten**, terwijl Repository ideaal is voor domeinlogica met query’s, filters en unit-of-work.
+
+> **Kortom:** de Repository Pattern is gekozen om _data-opslag te isoleren van logica_, waardoor testen, onderhoud en vervangbaarheid sterk verbeteren.
+
+---
 
 **Waar toegepast?**
 
